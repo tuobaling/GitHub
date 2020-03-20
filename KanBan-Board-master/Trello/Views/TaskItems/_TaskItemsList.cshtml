@@ -1,0 +1,61 @@
+﻿<div class="actsBox droptask inner">
+@foreach (var task in ViewBag.TaskItems)
+{
+    string checkID = "ch" + task.Id;
+    int cardId = task.CardId;
+    
+    if (task.Status == "DONE")
+    {
+        <div class="checkbox_group">
+            <div class="checkbox_text checked">
+                <input type="checkbox" id="@checkID" checked cardid = "@cardId"/> @task.Name
+                <i id="@checkID" class="delete-taskitem fa fa-trash-o"></i>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="checkbox_group">
+            <div class="checkbox_text">
+                <input type="checkbox" id="@checkID" cardid = "@cardId"/> @task.Name
+                <i id="@checkID" class="delete-taskitem fa fa-trash-o"></i>
+            </div>
+        </div>
+    }
+}
+</div>
+<script>
+
+    // attach sortable event on cards --  moving Cards && remembering positions
+    function AttachTaskSortable() {
+        $(".droptask").sortable({
+            connectWith: ".inner",
+            update: function (event, ui) { // update cards positions
+
+                var data = [];
+                var $items = $(this).children();
+                //console.log($items);
+                $items.each(function () { // get all positions and card ids
+
+                    var index = $(this).index();
+                    //console.log($(this).find("[type=checkbox]"));
+                    var taskId = $(this).find("[type=checkbox]").attr('id').replace(/\D/g, '');
+                    var cardId = $(this).find("[type=checkbox]").attr('cardid').replace(/\D/g, '');
+                    var row = { 'Id': taskId, 'PositionNo': index, 'CardId': cardId };
+
+                    data.push(row);
+                });
+
+                //console.log(JSON.stringify(data));
+                $.ajax({
+                    url: "/TaskItems/UpdatePosition",
+                    type: "POST",
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify(data)
+                });
+            }
+        });
+    }
+
+    AttachTaskSortable();
+</script>
