@@ -400,7 +400,9 @@ select {
     height: 17px;
 }
 
-
+.actitem_text {
+    cursor: pointer;
+}
 
 
 .add_task_item_container {
@@ -656,6 +658,13 @@ select {
     background-color: #0067A3;
 }
 
+.edit-actitem {
+    float: right;
+}
+
+    .edit-actitem:hover {
+        color: red;
+    }
 
 .delete-ticket:hover {
     color: red;
@@ -669,7 +678,7 @@ select {
         color: red;
     }
 
-    .delete-actitem {
+.delete-actitem {
     float: right;
 }
 
@@ -698,4 +707,3 @@ select {
     .ticketContainer.col-xs-12:hover {
         background-color: #cdd2d4;
     }
-

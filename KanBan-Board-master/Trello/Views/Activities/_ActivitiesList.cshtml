@@ -5,8 +5,8 @@
         string name = task.Name;
         int cardId = task.CardId;
 
-        <div class="checkbox_group">
-            <div class="checkbox_text">
+        <div class="actitem_group">
+            <div class="actitem_text">
                 <i class="fa fa-circle"></i>
                 @Html.Label(@name, new { id = @actID, @class = "actitem", @cardid = @cardId })
                 <i id="@actID" class="delete-actitem fa fa-trash-o"></i>

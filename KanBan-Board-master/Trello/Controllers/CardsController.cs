@@ -143,6 +143,47 @@ namespace Trello.Controllers
             return card.DueDate.ToString();
         }
 
+        // POST: Cards/Edit/5
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Edit([Bind(Include = "Id,Name")]Card card)
+        {
+            if (ModelState.IsValid)
+            {
+                var cards = db.Cards.FirstOrDefault(i => i.Id == card.Id);
+                if (cards == null) return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+                cards.Name = card.Name;
+
+                db.Entry(cards).State = EntityState.Modified;
+                db.SaveChanges();
+
+                var taskItems = Task.Factory.StartNew(() => db.TaskItems.Where((i) => i.CardId == card.Id).OrderBy((i) => i.PositionNo));
+                var activities = Task.Factory.StartNew(() => db.Activities.Where((i) => i.CardId == card.Id).OrderBy((i) => i.PositionNo));
+                var cardLabels = Task.Factory.StartNew(() => db.CardLabels.Where((e) => e.CardId == card.Id));
+                var comments = Task.Factory.StartNew(() => db.Comments.Where((i) => i.CardId == card.Id));
+                var attachments = Task.Factory.StartNew(() => db.Attachments.Where((i) => i.CardId == card.Id));
+                var labels = db.Labels.ToList();
+
+
+                await Task.WhenAll(taskItems, cardLabels, comments, attachments, activities); // release main thread to avoid thred starvation
+
+                ViewBag.Card = cards;
+                ViewBag.TaskItems = taskItems.Result.ToList();
+                ViewBag.Activities = activities.Result.ToList();
+                ViewBag.Comments = comments.Result.ToList();
+                ViewBag.CardLabels = cardLabels.Result.ToList();
+                List<Label> labelToRemove = (from label in labels from cardLabel in cardLabels.Result.ToList() where label.Id == cardLabel.Label.Id select cardLabel.Label).ToList();
+                ViewBag.Labels = labels.Except(labelToRemove);
+                ViewBag.Attachments = attachments.Result.ToList();
+
+            }
+            return PartialView("_CardDetails");
+
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)

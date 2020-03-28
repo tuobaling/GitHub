@@ -6,11 +6,11 @@ $(function () {
         var Status = null;
 
         if ($(this).is(':checked')) {
-            $(this).closest('.checkbox_group').find('.checkbox_text').addClass('checked');
+            $(this).closest('.actitem_group').find('.actitem_text').addClass('checked');
             Status = "DONE";
         }
         else {
-            $(this).closest('.checkbox_group').find('.checkbox_text').removeClass('checked');
+            $(this).closest('.actitem_group').find('.actitem_text').removeClass('checked');
             Status = "NOT DONE";
         }
 
@@ -50,8 +50,6 @@ $(function () {
         $("#add_act_item_btns").show();
 
     });
-
-
 
     $("#CardDetailModal").on('click', '.btn_addAct', function () { // Create new TaskItem
 

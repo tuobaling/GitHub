@@ -2,17 +2,17 @@
 
 $(function () {
 
-    $("#dialog-message").dialog({
-        modal: false,
-        autoOpen: false,
-        closeOnEscape: true,
-        position:
-        {
-            my: 'left+7 top',
-            at: 'left bottom+5',
-            of: $('.board.new')
-        }
-    }).show();
+    //$("#dialog-message").dialog({
+    //    modal: false,
+    //    autoOpen: false,
+    //    closeOnEscape: true,
+    //    position:
+    //    {
+    //        my: 'left+7 top',
+    //        at: 'left bottom+5',
+    //        of: $('.board.new')
+    //    }
+    //}).show();
 
 
     $(document).on('click', '.userBoardLink', function (event) {
@@ -29,22 +29,48 @@ $(function () {
 
 
 
-    $(document).on('click', '.board.new', function () { // open new board dialog
-        if ($('#dialog-message').dialog("isOpen")) $('#dialog-message').dialog("close");
-        else $('#dialog-message').dialog("open");
+    $(document).on('click', '#add_board', function () { // open new board dialog
+        $('#add_board').hide();
+        $('#add_board_input').show();
     });
 
-
-    $(document).on('click', '.close_dialog', function () { // close dialog button
-        $(this).closest("#dialog-message").dialog("close");
+    $(document).on('click', '.close', function () { // Hide input
+        $('#add_board_text').val("");
+        $("#add_board_input").hide();
+        $('#add_board').show();
     });
 
+    $(document).on('click', '.btn_addBoard', function () { // Hide input
 
-    $(window).click(function (event) { // handle click outside of dialog :) it works :)
-        if ($(event.target.closest('.ui-dialog')).length !== 1 && $(event.target.closest('.board.new')).length !== 1) {
-            $("#dialog-message").dialog("close");
-        }
+        var token = $("#__AjaxAntiForgeryForm input").val();
+        var boardName = $('#add_board_text').val();
+        var data = {
+            __RequestVerificationToken: token,
+            Name: boardName
+        };
+
+        $.ajax({
+            url: "/Boards/Create",
+            type: "POST",
+            data: data,
+            success: function (data) {
+                var domain = window.location.host;
+                window.location.replace("http://" + domain + "/Boards/Index");
+            }
+
+        });
     });
+
+    //$(document).on('click', '.close_dialog', function () { // close dialog button
+    //    $(this).closest("#dialog-message").dialog("close");
+    //});
+
+
+    //$(window).click(function (event) { // handle click outside of dialog :) it works :)
+    //    if ($(event.target.closest('.ui-dialog')).length !== 1 && $(event.target.closest('.board.new')).length !== 1) {
+    //        $("#dialog-message").dialog("close");
+    //    }
+    //});
 
     $(document).on('click', '.delete-board', function (event) {
         event.stopPropagation();
@@ -82,4 +108,3 @@ $(function () {
 
 
 
- 

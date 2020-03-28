@@ -263,6 +263,7 @@
     <Content Include="Scripts\_Boards.js" />
     <Content Include="Scripts\_Comments.js" />
     <Content Include="Scripts\_DueDates.js" />
+    <Content Include="Scripts\_EditHelpers.js" />
     <Content Include="Scripts\_Hub.js" />
     <Content Include="Scripts\_Labels.js" />
     <Content Include="Scripts\_references.js" />
@@ -320,7 +321,6 @@
     <Content Include="Views\TaskItems\Edit.cshtml" />
     <Content Include="Views\TaskItems\Index.cshtml" />
     <Content Include="Views\TaskItems\_TaskItemsList.cshtml" />
-    <Content Include="Views\Boards\_CreateBoardDialog.cshtml" />
     <Content Include="Views\Comments\_CommentsList.cshtml" />
     <Content Include="Views\Labels\_AddLabel.cshtml" />
     <Content Include="Views\Labels\_LabelDetails.cshtml" />
@@ -334,6 +334,7 @@
     <Content Include="Views\Activities\Details.cshtml" />
     <Content Include="Views\Activities\Edit.cshtml" />
     <Content Include="Views\Activities\Index.cshtml" />
+    <Content Include="Views\Shared\_SearchPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -34,6 +34,17 @@ namespace Trello.Controllers
             //    var board = context.Boards.Find(1);
             //    context.Entry(board).Collection("Tickets").Load();
             //}
+            var selectList = new List<SelectListItem>()
+            {
+                new SelectListItem {Text="All", Value="All" },
+                new SelectListItem {Text="Board", Value="Board" },
+                new SelectListItem {Text="Card", Value="Card" },
+            };
+
+            //預設選擇哪一筆
+            selectList.Where(q => q.Value == "Board").First().Selected = true;
+
+            ViewBag.SearchType = selectList;
 
             var userId = System.Web.HttpContext.Current.User.Identity.GetUserId();
             var userBoardsIds = db.UserBoards.Where((i) => i.UserId == userId).Select((i) => i.BoardId);
@@ -77,6 +88,18 @@ namespace Trello.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "Name")] Board board)
         {
+            var selectList = new List<SelectListItem>()
+            {
+                new SelectListItem {Text="All", Value="All" },
+                new SelectListItem {Text="Board", Value="Board" },
+                new SelectListItem {Text="Card", Value="Card" },
+            };
+
+            //預設選擇哪一筆
+            selectList.Where(q => q.Value == "Board").First().Selected = true;
+
+            ViewBag.SearchType = selectList;
+
             board.UserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
             board.CreatedOn = DateTime.Now;
             board.BoardType = (int)BoardType.Normal;
@@ -90,6 +113,29 @@ namespace Trello.Controllers
 
             return View(board);
         }
+
+        //// POST: Boards/Create
+        //// To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        //// more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public ActionResult Create([Bind(Include = "Name")] string action, string boardName)
+        //{
+        //    Board board = new Board();
+        //    board.Name = boardName;
+        //    board.UserId = System.Web.HttpContext.Current.User.Identity.GetUserId();
+        //    board.CreatedOn = DateTime.Now;
+        //    board.BoardType = (int)BoardType.Normal;
+
+        //    if (ModelState.IsValid)
+        //    {
+        //        db.Boards.Add(board);
+        //        db.SaveChanges();
+        //        return RedirectToAction("Index");
+        //    }
+
+        //    return View(board);
+        //}
 
         // GET: Boards/Edit/5
         public ActionResult Edit(int? id)
@@ -111,13 +157,19 @@ namespace Trello.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Name,CreatedOn,UserId")] Board board)
+        public ActionResult Edit([Bind(Include = "Id,Name")] Board board)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(board).State = EntityState.Modified;
+                var boards = db.Boards.FirstOrDefault(i => i.Id == board.Id);
+                if (boards == null) return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+                boards.Name = board.Name;
+
+                db.Entry(boards).State = EntityState.Modified;
                 db.SaveChanges();
-                return RedirectToAction("Index");
+
+                return View("Details", boards);
             }
             return View(board);
         }
@@ -128,6 +180,18 @@ namespace Trello.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed([Bind(Include = "boardId")]int boardId)
         {
+            var selectList = new List<SelectListItem>()
+            {
+                new SelectListItem {Text="All", Value="All" },
+                new SelectListItem {Text="Board", Value="Board" },
+                new SelectListItem {Text="Card", Value="Card" },
+            };
+
+            //預設選擇哪一筆
+            selectList.Where(q => q.Value == "Board").First().Selected = true;
+
+            ViewBag.SearchType = selectList;
+
             try
             {
                 Board board = db.Boards.Find(boardId);
@@ -153,6 +217,51 @@ namespace Trello.Controllers
             }
         }
 
+        //
+        // Post: /Boards/Search
+        [HttpPost]
+        public ActionResult Search(string keyword, string searchtype)
+        {
+            var selectList = new List<SelectListItem>()
+            {
+                new SelectListItem {Text="All", Value="All" },
+                new SelectListItem {Text="Board", Value="Board" },
+                new SelectListItem {Text="Card", Value="Card" },
+            };
+
+            //預設選擇哪一筆
+            selectList.Where(q => q.Value == "Board").First().Selected = true;
+
+            ViewBag.SearchType = selectList;
+
+            var userId = System.Web.HttpContext.Current.User.Identity.GetUserId();
+            var userBoardsIds = db.UserBoards.Where((i) => i.UserId == userId).Select((i) => i.BoardId);
+            var userBoards = db.Boards.Where((i) => userBoardsIds.Contains(i.Id));
+            var ownedBoards = db.Boards.Where((i) => i.UserId == userId);
+
+            var allBoards = userBoards.Union(ownedBoards).ToList();
+
+            if (keyword != null && keyword != "" && searchtype == "Board")
+            {
+                var boards = allBoards.Where((i) => i.Name.Contains(keyword)).OrderBy((i) => i.Id).ToList();
+                return View("Index", boards);
+            }
+            else if (keyword != null && keyword != "" && searchtype == "Ticket")
+            {
+                var tickets = db.Tickets.Where((i) => i.Name.Contains(keyword)).Select((i) => i.BoardId).ToList();
+                var boards = allBoards.Where((i) => tickets.Contains(i.Id)).OrderBy((i) => i.Id).ToList();
+                return View("Index", boards);
+            }
+            else if (keyword != null && keyword != "" && searchtype == "Card")
+            {
+                var cards = db.Cards.Where((i) => i.Name.Contains(keyword)).Select((i) => i.TicketId).ToList();
+                var tickets = db.Tickets.Where((i) => cards.Contains(i.Id)).Select((i) => i.BoardId).ToList();
+                var boards = allBoards.Where((i) => tickets.Contains(i.Id)).OrderBy((i) => i.Id).ToList();
+                return View("Index", boards);
+            }
+            return View("Index", allBoards);
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -161,5 +270,6 @@ namespace Trello.Controllers
             }
             base.Dispose(disposing);
         }
+
     }
 }

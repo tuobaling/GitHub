@@ -61,7 +61,7 @@ $(function () {
             }
         }).done(function () { // reattach sortable event to dynamically created elements
             AttachCardSortable();
-        });;
+        });
 
     });
 

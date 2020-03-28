@@ -23,6 +23,8 @@ namespace Trello.DAL.Models
 
         public int CardId { get; set; }
 
+        public int PositionNo { get; set; }
+
         public virtual Card Card { get; set; }
     }
 }

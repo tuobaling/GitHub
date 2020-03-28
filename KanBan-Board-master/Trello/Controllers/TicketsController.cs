@@ -57,13 +57,17 @@ namespace Trello.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Name,CreatedOn,BoardId")] Ticket ticket)
+        public ActionResult Edit([Bind(Include = "Id,Name,BoardId")] Ticket ticket)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(ticket).State = EntityState.Modified;
+                var tickets = db.Tickets.FirstOrDefault(i => i.Id == ticket.Id);
+                tickets.Name = ticket.Name;
+
+                db.Entry(tickets).State = EntityState.Modified;
                 db.SaveChanges();
-                return RedirectToAction("Index");
+
+                return RedirectToAction("Details", "Boards", new { id = tickets.BoardId });
             }
             ViewBag.BoardId = new SelectList(db.Boards, "Id", "Name", ticket.BoardId);
             return View(ticket);

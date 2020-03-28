@@ -17,20 +17,26 @@
     @Html.AntiForgeryToken()
 }
 
-<div class="modal-dialog" >
+<div class="modal-dialog">
     <!-- Modal content-->
     <div class="modal-content">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h4 class="modal-title" ><i class="glyphicon glyphicon-th-list"></i><b> @ViewBag.Card.Name</b></h4>
+            <h4 class="modal-title">
+                <i class="glyphicon glyphicon-th-list"></i>
+            </h4>
+            <div class="edithelper">
+                <input type="hidden" class="edithelper_event" value="cardedit" />
+                <div class="labelfield" style="font-weight: bold;">@ViewBag.Card.Name</div>
+            </div>
         </div>
         <div class="modal-body clearfix">
-            <input type="hidden" name="TicketId" value="@ViewBag.Card.TicketId"/>
+            <input type="hidden" name="TicketId" value="@ViewBag.Card.TicketId" />
             <div class="col-xs-9">
                 <div class="card_details_info">
-                    <i class="fa fa-info"></i> Details
+                    <i class="fa fa-info"></i>Details
                 </div>
-                <div><i class="glyphicon glyphicon-check"></i> Created on:@ViewBag.Card.CreatedOn</div>
+                <div><i class="glyphicon glyphicon-check"></i>Created on:@ViewBag.Card.CreatedOn</div>
                 <div>
                     <i class="glyphicon glyphicon-calendar"></i>
                     Due date: <span id="cardDueDate">@ViewBag.Card.DueDate</span>
@@ -57,7 +63,7 @@
                 <!--Activity AREA-->
                 <div id="act_area" class="margin_top_30">
                     <div class="header">
-                        <i class="glyphicon glyphicon-check"></i> Activities
+                        <i class="glyphicon glyphicon-check"></i>Activities
                     </div>
 
                     <div class="progress">
@@ -83,7 +89,7 @@
                 <!--TASK AREA-->
                 <div id="task_area" class="margin_top_30">
                     <div class="header">
-                        <i class="glyphicon glyphicon-check"></i> Tasks
+                        <i class="glyphicon glyphicon-check"></i>Tasks
                     </div>
 
                     <div class="progress">
@@ -115,7 +121,7 @@
                 <!--COMMENT AREA-->
                 <div id="comment_area" class="margin_top_30">
                     <div class="header">
-                        <i class="fa fa-comments-o"></i> Add Comment
+                        <i class="fa fa-comments-o"></i>Add Comment
                     </div>
                     <div class="user_label text-center padding_left_right_0">@loggedUserShort</div>
                     <textarea class="add_comment" id="comment_text" placeholder="Add comment"></textarea>
@@ -125,7 +131,7 @@
                         @if (comments_num > 0)
                         {
                             <div class="header margin_top_30 margin_bottom_20">
-                                <i class="glyphicon glyphicon-align-right"></i> Activity
+                                <i class="glyphicon glyphicon-align-right"></i>Activity
                             </div>
                             @Html.Partial("../Comments/_CommentsList")
                         }
@@ -134,39 +140,42 @@
                 <!--COMMENT AREA-->
 
 
-            </div> <!--col-xs-9 -->
-
-
+            </div>
+            <!--col-xs-9 -->
             <!--BUTTON SECTION-->
             <div class="col-xs-3 padding_left_right_0">
-                <div class="header"><b>Add</b>
+                <div class="header">
+                    <b>Add</b>
                 </div>
-                <button id="labelsDialog" class="light_gray_border btn btn-default btn-block"><i class="fa fa-tags"></i> Labels</button>
-                <button class="light_gray_border btn btn-default btn-block" id="chooseDateButton" ><i class="fa fa-clock-o"></i> Due date</button>
+                <button id="labelsDialog" class="light_gray_border btn btn-default btn-block"><i class="fa fa-tags"></i>Labels</button>
+                <button class="light_gray_border btn btn-default btn-block" id="chooseDateButton"><i class="fa fa-clock-o"></i>Due date</button>
 
                 <form action="" method="POST" id="attachmentFormUpload" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()
                     <span style="margin-top: 5px" class="btn btn-default btn-file btn-block">
                         <input type="hidden" value="@ViewBag.Card.Id" name="CardId" id="CardId" />
-                        <i class="glyphicon glyphicon-paperclip"></i>  Attachment <input onchange="SendAttachment()" name="upload" type="file">
+                        <i class="glyphicon glyphicon-paperclip"></i>Attachment
+                        <input onchange="SendAttachment()" name="upload" type="file">
                     </span>
                 </form>
             </div>
 
             <div class="col-xs-3 padding_left_right_0 margin_top_30">
-                <div class="header"><b>Actions</b>
+                <div class="header">
+                    <b>Actions</b>
                 </div>
-                <button id="moveCard" class="light_gray_border btn btn-default btn-block"><i class="fa fa-arrow-right"></i> Move</button>
-                <button id="copyCard" class="light_gray_border btn btn-default btn-block"><i class="fa fa-save"></i> Copy</button>
-                <button id="archiveCard" class="light_gray_border btn btn-default btn-block"><i class="fa fa-trash-o"></i> Archive</button>
-                <button id="deleteCard" class="light_gray_border btn btn-default btn-block"><i class="fa fa-trash-o"></i> Delete</button>
+                <button id="moveCard" class="light_gray_border btn btn-default btn-block"><i class="fa fa-arrow-right"></i>Move</button>
+                <button id="copyCard" class="light_gray_border btn btn-default btn-block"><i class="fa fa-save"></i>Copy</button>
+                <button id="archiveCard" class="light_gray_border btn btn-default btn-block"><i class="fa fa-trash-o"></i>Archive</button>
+                <button id="deleteCard" class="light_gray_border btn btn-default btn-block"><i class="fa fa-trash-o"></i>Delete</button>
             </div>
             <!--BUTTON SECTION-->
 
             <div id="loadDialogArea">
-                @Html.Partial("../Labels/_AddLabel"); <!-- Include create board dialog -->
+                @Html.Partial("../Labels/_AddLabel");
+                <!-- Include create board dialog -->
             </div>
-        </div>        
+        </div>
         <div class="modal-footer">
         </div>
     </div>
@@ -181,7 +190,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" onclick="CloseDateModal()">&times;</button>
-                <h4 class="modal-title"><i class="glyphicon glyphicon-calendar"></i><b> Choose date</b></h4>
+                <h4 class="modal-title"><i class="glyphicon glyphicon-calendar"></i><b>Choose date</b></h4>
             </div>
             <div class="modal-body">
                 <p>Here you can choose the date and hour.</p>
