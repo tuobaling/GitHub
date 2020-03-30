@@ -1,0 +1,5 @@
+﻿<div class="text-center">
+    <input type="text" id="Keyword" placeholder="Search" />
+    @Html.DropDownList("SearchType", (IEnumerable<SelectListItem>)ViewBag.SearchType)
+    <button type="submit" class="btn btn-default fa fa-search" id="Search"></button>
+</div>

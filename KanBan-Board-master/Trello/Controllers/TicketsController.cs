@@ -7,48 +7,31 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using Trello;
+using Trello.BLL.Services;
 using Trello.DAL.Models;
 
 namespace Trello.Controllers
 {
     public class TicketsController : Controller
     {
-        private DataModel db = new DataModel();
+        private ITicketsService _service;
 
+        public TicketsController(ITicketsService service)
+        {
+            _service = service;
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public void Create([Bind(Include = "Name,BoardId")] Ticket ticket)
         {
-
-            int latestPoistion = (from c in db.Tickets
-                                  where c.BoardId == ticket.BoardId
-                                  orderby c.PositionNo descending
-                                  select c.PositionNo).FirstOrDefault();
-
-
-            ticket.CreatedOn = DateTime.Now;
-            ticket.PositionNo = latestPoistion + 1;
-            db.Tickets.Add(ticket);
-            db.SaveChanges();
+            _service.Create(ticket);
         }
-
-
 
         [HttpPost]
         public HttpStatusCode UpdatePosition(List<Ticket> data)
         {
-            var boardId = data[0].BoardId;
-            var tickets = db.Tickets.Where((i) => i.BoardId == boardId).ToList();
-
-            foreach (Ticket t in data)
-            {
-                var ticket = tickets.First((i) => i.Id == t.Id);
-                ticket.PositionNo = t.PositionNo;
-                db.Entry(ticket).State = EntityState.Modified;
-                db.SaveChanges();
-            }
-            return HttpStatusCode.OK;
+            return _service.UpdatePosition(data);
         }
 
 
@@ -61,15 +44,18 @@ namespace Trello.Controllers
         {
             if (ModelState.IsValid)
             {
-                var tickets = db.Tickets.FirstOrDefault(i => i.Id == ticket.Id);
-                tickets.Name = ticket.Name;
+                int result = _service.Update(ticket);
 
-                db.Entry(tickets).State = EntityState.Modified;
-                db.SaveChanges();
-
-                return RedirectToAction("Details", "Boards", new { id = tickets.BoardId });
+                if (result == 1)
+                {
+                    return RedirectToAction("Details", "Boards", new { id = ticket.BoardId });
+                }
+                else
+                {
+                    return new HttpNotFoundResult("Failed");
+                }
             }
-            ViewBag.BoardId = new SelectList(db.Boards, "Id", "Name", ticket.BoardId);
+            //ViewBag.BoardId = new SelectList(db.Boards, "Id", "Name", ticket.BoardId);
             return View(ticket);
         }
 
@@ -81,19 +67,13 @@ namespace Trello.Controllers
         {
             try
             {
-                Ticket tickets = db.Tickets.Find(ticketId);
-
-                tickets.Cards.ToList().ForEach((i) =>
-                {
-                    db.TaskItems.RemoveRange(i.TaskItems);
-                });
-
-                db.Cards.RemoveRange(tickets.Cards);
-                db.Tickets.Remove(tickets);
-                db.SaveChanges();
-                return new HttpStatusCodeResult(HttpStatusCode.OK);
+                int result = _service.Delete(ticketId);
+                if (result == 1)
+                    return new HttpStatusCodeResult(HttpStatusCode.OK);
+                else
+                    return new HttpStatusCodeResult(HttpStatusCode.NotModified);
             }
-            catch (Exception e)
+            catch
             {
                 return new HttpStatusCodeResult(HttpStatusCode.NotModified);
             }
@@ -101,10 +81,10 @@ namespace Trello.Controllers
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                db.Dispose();
-            }
+            //if (disposing)
+            //{
+            //    db.Dispose();
+            //}
             base.Dispose(disposing);
         }
     }

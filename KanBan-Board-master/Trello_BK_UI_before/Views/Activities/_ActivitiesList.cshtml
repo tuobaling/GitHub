@@ -1,0 +1,50 @@
+﻿<div class="actsBox dropact inner">
+    @foreach (var task in ViewBag.Activities)
+    {
+        string actID = "act" + task.Id;
+        string name = task.Name;
+        int cardId = task.CardId;
+
+        <div class="actitem_group">
+            <div class="actitem_text">
+                <i class="fa fa-circle"></i>
+                @Html.Label(@name, new { id = @actID, @class = "actitem", @cardid = @cardId })
+                <i id="@actID" class="delete-actitem fa fa-trash-o"></i>
+            </div>
+        </div>
+    }
+</div>
+<script>
+
+    // attach sortable event on cards --  moving Cards && remembering positions
+    function AttachActSortable() {
+        $(".dropact").sortable({
+            connectWith: ".inner",
+            update: function (event, ui) { // update cards positions
+
+                var data = [];
+                var $items = $(this).children();
+                //console.log($items);
+                $items.each(function () { // get all positions and card ids
+
+                    var index = $(this).index();
+                    var actId = $(this).find('.actitem').attr('id').replace(/\D/g, '');
+                    var cardId = $(this).find('.actitem').attr('cardid').replace(/\D/g, '');
+                    var row = { 'Id': actId, 'PositionNo': index, 'CardId': cardId };
+
+                    data.push(row);
+                });
+
+                //console.log(JSON.stringify(data));
+                $.ajax({
+                    url: "/Activities/UpdatePosition",
+                    type: "POST",
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify(data)
+                });
+            }
+        });
+    }
+
+    AttachActSortable();
+</script>
