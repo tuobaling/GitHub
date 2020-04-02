@@ -25,13 +25,13 @@ namespace Trello.Controllers
         [ValidateAntiForgeryToken]
         public void Create([Bind(Include = "Name,BoardId")] Ticket ticket)
         {
-            _service.Create(ticket);
+            _service.Insert(ticket);
         }
 
         [HttpPost]
-        public HttpStatusCode UpdatePosition(List<Ticket> data)
+        public void UpdatePosition(List<Ticket> data)
         {
-            return _service.UpdatePosition(data);
+            _service.UpdatePosition(data);
         }
 
 
@@ -44,13 +44,12 @@ namespace Trello.Controllers
         {
             if (ModelState.IsValid)
             {
-                int result = _service.Update(ticket);
-
-                if (result == 1)
+                try
                 {
+                    _service.Update(ticket);
                     return RedirectToAction("Details", "Boards", new { id = ticket.BoardId });
                 }
-                else
+                catch
                 {
                     return new HttpNotFoundResult("Failed");
                 }
@@ -67,11 +66,8 @@ namespace Trello.Controllers
         {
             try
             {
-                int result = _service.Delete(ticketId);
-                if (result == 1)
-                    return new HttpStatusCodeResult(HttpStatusCode.OK);
-                else
-                    return new HttpStatusCodeResult(HttpStatusCode.NotModified);
+                _service.Delete(ticketId);
+                return new HttpStatusCodeResult(HttpStatusCode.OK);
             }
             catch
             {
@@ -81,10 +77,6 @@ namespace Trello.Controllers
 
         protected override void Dispose(bool disposing)
         {
-            //if (disposing)
-            //{
-            //    db.Dispose();
-            //}
             base.Dispose(disposing);
         }
     }

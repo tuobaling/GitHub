@@ -74,6 +74,8 @@
     <Compile Include="Models\TaskItem.cs" />
     <Compile Include="Models\Ticket.cs" />
     <Compile Include="Models\UserBoard.cs" />
+    <Compile Include="Repositories\GenericRepository.cs" />
+    <Compile Include="UnitOfWorks\UnitOfWorks.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

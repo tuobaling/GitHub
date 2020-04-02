@@ -26,8 +26,13 @@ namespace Trello.Controllers
         // GET: UserBoards
         public async Task<ActionResult> Index(int id)
         {
-            string ownerId = "";
-            IEnumerable<UserBoard> userBoards = await _service.Get(id, ownerId);
+            var ownerId = _service.GetBoardById(id).UserId;
+
+            Task<IEnumerable<UserBoard>> userBoards = Task.Factory.StartNew(
+               () => _service.Get(id)
+            );
+
+            await Task.WhenAll(userBoards);
 
             ViewBag.OwnerId = ownerId;
             ViewBag.BoardId = id;
@@ -42,16 +47,8 @@ namespace Trello.Controllers
         {
             if (ModelState.IsValid)
             {
-                int result = _service.Create(userBoard);
-                if (result == 1)
-                {
-                    return RedirectToAction("Index", new { id = userBoard.BoardId });
-
-                }
-                else
-                {
-                    return new HttpNotFoundResult("Failed");
-                }
+                _service.Insert(userBoard);
+                return RedirectToAction("Index", new { id = userBoard.BoardId });
             }
 
             return new HttpNotFoundResult("Failed");
@@ -62,25 +59,14 @@ namespace Trello.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id)
         {
-            int boardId;
-            int result = _service.Delete(id, out boardId);
-
-            if (result == 1)
-            {
-                return RedirectToAction("Index", "UserBoards", new { id = boardId });
-            }
-            else
-            {
-                return new HttpNotFoundResult("Failed");
-            }
+            var boardId = _service.GetById(id).BoardId;
+            _service.Delete(id);
+           
+            return RedirectToAction("Index", "UserBoards", new { id = boardId });
         }
 
         protected override void Dispose(bool disposing)
         {
-            //if (disposing)
-            //{
-            //    db.Dispose();
-            //}
             base.Dispose(disposing);
         }
     }

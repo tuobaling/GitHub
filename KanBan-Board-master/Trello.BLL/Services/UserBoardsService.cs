@@ -3,46 +3,87 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Trello.BLL.Repositories;
+using Trello.DAL.Repositories;
 using Trello.DAL.Models;
+using Trello.DAL.UnitOfWorks;
 
 namespace Trello.BLL.Services
 {
     public interface IUserBoardsService
     {
-        Task<IEnumerable<UserBoard>> Get(int id, string ownerId);
-        int Create(UserBoard item);
-        void Update(UserBoard item);
-        int Delete(int id, out int boardId);
+        IEnumerable<UserBoard> Get();
+        IEnumerable<UserBoard> Get(int id);
+        IQueryable<UserBoard> Query();
+        UserBoard GetById(int id);
+        Board GetBoardById(int id);
+        UserBoard GetFirstOrDefault();
+        void Insert(UserBoard data);
+
+        void Update(UserBoard data);
+
+        void Delete(int id);
+        void Delete(UserBoard data);
     }
     public class UserBoardsService : IUserBoardsService
     {
-        private readonly IUserBoardsRepository _repository;
-
-        public UserBoardsService(IUserBoardsRepository repository)
+        private readonly IUnitOfWorks _unitOfWork;
+        public UserBoardsService(IUnitOfWorks unitOfWork)
         {
-            _repository = repository;
+            _unitOfWork = unitOfWork;
+        }
+        public void Delete(int id)
+        {
+            _unitOfWork.Repository<UserBoard>().Delete(id);
+            _unitOfWork.Save();
         }
 
-        //// GET: UserBoards
-        public Task<IEnumerable<UserBoard>> Get(int id, string ownerId)
+        public void Delete(UserBoard data)
         {
-            return _repository.GetAsync(id, ownerId);
+            _unitOfWork.Repository<UserBoard>().Delete(data);
+            _unitOfWork.Save();
         }
 
-        public int Create(UserBoard userBoard)
+        public IEnumerable<UserBoard> Get()
         {
-            return _repository.Create(userBoard);
+            return _unitOfWork.Repository<UserBoard>().Get().ToList();
         }
 
-        public void Update(UserBoard userBoard)
+        public IEnumerable<UserBoard> Get(int id)
         {
-            _repository.Update(userBoard);
+            return _unitOfWork.Repository<UserBoard>().Get((i) => i.BoardId == id, null , a => a.AspNetUser, b => b.Board).ToList();
         }
 
-        public int Delete(int id, out int boardId)
+        public UserBoard GetById(int id)
         {
-            return _repository.Delete(id, out boardId);
+            return _unitOfWork.Repository<UserBoard>().Get(data => data.Id == id).FirstOrDefault();
+        }
+        public Board GetBoardById(int id)
+        {
+            return _unitOfWork.Repository<Board>().Get(data => data.Id == id).FirstOrDefault();
+        }
+
+        public UserBoard GetFirstOrDefault()
+        {
+            return _unitOfWork.Repository<UserBoard>().Get().FirstOrDefault();
+        }
+
+        public void Insert(UserBoard data)
+        {
+            data.Id = new Random().Next();
+
+            _unitOfWork.Repository<UserBoard>().Insert(data);
+            _unitOfWork.Save();
+        }
+
+        public IQueryable<UserBoard> Query()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Update(UserBoard data)
+        {
+            _unitOfWork.Repository<UserBoard>().Update(data);
+            _unitOfWork.Save();
         }
     }
 }

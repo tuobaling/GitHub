@@ -4,51 +4,89 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Trello.BLL.Repositories;
+using Trello.DAL.Repositories;
 using Trello.DAL.Models;
+using Trello.DAL.UnitOfWorks;
 
 namespace Trello.BLL.Services
 {
     public interface ITicketsService
     {
-        Task<IEnumerable<Ticket>> Get(int id, string ownerId);
-        int Create(Ticket item);
-        int Update(Ticket item);
-        int Delete(int ticketId);
+        IEnumerable<Ticket> Get();
+        IQueryable<Ticket> Query();
+        Ticket GetById(int id);
+        Ticket GetFirstOrDefault();
+        void Insert(Ticket data);
 
-        HttpStatusCode UpdatePosition(List<Ticket> data);
+        void Update(Ticket data);
+
+        void Delete(int id);
+        void Delete(Ticket data);
+        void UpdatePosition(IEnumerable<Ticket> data);
     }
     public class TicketsService : ITicketsService
     {
-        private readonly ITicketsRepository _repository;
-
-        public TicketsService(ITicketsRepository repository)
+        private readonly IUnitOfWorks _unitOfWork;
+        public TicketsService(IUnitOfWorks unitOfWork)
         {
-            _repository = repository;
-        }
-        public int Create(Ticket item)
-        {
-            return _repository.Create(item);
+            _unitOfWork = unitOfWork;
         }
 
-        public int Delete(int ticketId)
+        public void Delete(int id)
         {
-            return _repository.Delete(ticketId);
+            _unitOfWork.Repository<Ticket>().Delete(id);
+            _unitOfWork.Save();
         }
 
-        public Task<IEnumerable<Ticket>> Get(int id, string ownerId)
+        public void Delete(Ticket data)
+        {
+            _unitOfWork.Repository<Ticket>().Delete(data);
+            _unitOfWork.Save();
+        }
+
+        public IEnumerable<Ticket> Get()
+        {
+            return _unitOfWork.Repository<Ticket>().Get().ToList();
+        }
+
+        public Ticket GetById(int id)
+        {
+            return _unitOfWork.Repository<Ticket>().Get(data => data.Id == id).FirstOrDefault();
+        }
+
+        public Ticket GetFirstOrDefault()
+        {
+            return _unitOfWork.Repository<Ticket>().Get().FirstOrDefault();
+        }
+
+        public void Insert(Ticket data)
+        {
+            _unitOfWork.Repository<Ticket>().Insert(data);
+            _unitOfWork.Save();
+        }
+
+        public IQueryable<Ticket> Query()
         {
             throw new NotImplementedException();
         }
 
-        public int Update(Ticket item)
+        public void Update(Ticket data)
         {
-            return _repository.Update(item);
+            _unitOfWork.Repository<Ticket>().Update(data);
+            _unitOfWork.Save();
         }
 
-        public HttpStatusCode UpdatePosition(List<Ticket> data)
+        public void UpdatePosition(IEnumerable<Ticket> data)
         {
-            return _repository.UpdatePosition(data);
+            var boardId = data.ElementAt(0).BoardId;
+
+            foreach (Ticket t in data)
+            {
+                var ticket = _unitOfWork.Repository<Ticket>().Get((i) => i.Id == t.Id && i.BoardId == boardId).FirstOrDefault();
+                ticket.PositionNo = t.PositionNo;
+                _unitOfWork.Repository<Ticket>().Update(ticket);
+            }
+            _unitOfWork.Save();
         }
     }
 }
