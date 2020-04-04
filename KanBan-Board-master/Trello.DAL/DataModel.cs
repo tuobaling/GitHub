@@ -1,16 +1,10 @@
+using System.Data.Entity;
+
 namespace Trello.DAL.Models
 {
-    using System;
-    using System.Data.Entity;
-    using System.ComponentModel.DataAnnotations.Schema;
-    using System.Linq;
-
     public partial class DataModel : DbContext
     {
-        public DataModel()
-            : base("name=DataModel1")
-        {
-        }
+        public DataModel() : base("name=DataModel1") { }
 
         public virtual DbSet<AspNetRole> AspNetRoles { get; set; }
         public virtual DbSet<AspNetUserClaim> AspNetUserClaims { get; set; }
@@ -97,7 +91,7 @@ namespace Trello.DAL.Models
 
             modelBuilder.Entity<Card>()
                 .Property(e => e.DueDate);
-                //.IsUnicode(false);
+            //.IsUnicode(false);
 
             modelBuilder.Entity<Card>()
                 .Property(e => e.Attachement)

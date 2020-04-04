@@ -26,13 +26,9 @@ namespace Trello.Controllers
         // GET: UserBoards
         public async Task<ActionResult> Index(int id)
         {
-            var ownerId = _service.GetBoardById(id).UserId;
+            var ownerId = _service.GetBoardUserIdById(id);
 
-            Task<IEnumerable<UserBoard>> userBoards = Task.Factory.StartNew(
-               () => _service.Get(id)
-            );
-
-            await Task.WhenAll(userBoards);
+            IEnumerable<UserBoard> userBoards = await _service.GetUserBoardsAsync(id);
 
             ViewBag.OwnerId = ownerId;
             ViewBag.BoardId = id;
@@ -59,14 +55,19 @@ namespace Trello.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id)
         {
-            var boardId = _service.GetById(id).BoardId;
-            _service.Delete(id);
-           
+            var boardId = _service.GetBoardIdById(id);
+            var userBoards = _service.GetUserBoard(id);
+
+            _service.Delete(userBoards);
+
             return RedirectToAction("Index", "UserBoards", new { id = boardId });
         }
 
         protected override void Dispose(bool disposing)
         {
+            if (disposing)
+                _service.Dispose(disposing);
+
             base.Dispose(disposing);
         }
     }
